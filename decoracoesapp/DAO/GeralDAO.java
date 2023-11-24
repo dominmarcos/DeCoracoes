@@ -4,9 +4,13 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
+
 import com.example.decoracoesapp.Model.Cliente;
-import com.example.decoracoesapp.View.Conexao;
+import com.example.decoracoesapp.Model.Evento;
+import com.example.decoracoesapp.Model.Produto;
 
 
 public class GeralDAO {
@@ -100,12 +104,102 @@ public class GeralDAO {
         }
     }
 
-    public Cliente procurar(int telefone) {
-        String sql = "select * from cliente where telefone = ?";
+    public Evento obterEvento(int id) {
+        String sql = "SELECT e.local, e.data, e.id_cliente, e.endereco, ep.id_produto " +
+                "FROM evento e " +
+                "LEFT JOIN evento_produto ep ON e.id = ep.id_evento " +
+                "WHERE e.id = ?";
+
+        try (Connection conexao = Conexao.getConexao();
+             PreparedStatement stmt = conexao.prepareStatement(sql)) {
+
+            stmt.setInt(1, id);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    Cliente cliente = procurarId(rs.getInt("id_cliente"));
+                    List<Produto> produtos = obterProdutosDoEvento(id);
+
+                    Evento evento = new Evento(
+                            rs.getString("local"),
+                            rs.getDate("data"),
+                            cliente,
+                            rs.getString("endereco"),
+                            produtos
+                    );
+
+                    return evento;
+                }
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        return null;
+    }
+
+    public List<String> obterNomesProdutos() {
+        String sql = "SELECT nome FROM produto";
+
+        try (Connection conexao = Conexao.getConexao();
+             PreparedStatement stmt = conexao.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+            List<String> nomesProdutos = new ArrayList<>();
+            while (rs.next()) {
+                nomesProdutos.add(rs.getString("nome"));
+            }
+
+            return nomesProdutos;
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public double calcularValorTotalEvento(Evento evento) {
+        double valorTotal = 0.0;
+
+        for (Produto produto : evento.getProdutos()) {
+            valorTotal += produto.getValor();
+        }
+
+        return valorTotal;
+    }
+
+    // Método auxiliar para obter a lista de produtos associados a um evento
+    private List<Produto> obterProdutosDoEvento(int idEvento) {
+        String sql = "SELECT * FROM evento_produto WHERE id_evento = ?";
+
+        try (Connection conexao = Conexao.getConexao();
+             PreparedStatement stmt = conexao.prepareStatement(sql)) {
+
+            stmt.setInt(1, idEvento);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                List<Produto> produtos = new ArrayList<>();
+
+                while (rs.next()) {
+                    Produto produto = procurarIdProduto(rs.getInt("id_produto"));
+                    produtos.add(produto);
+                }
+
+                return produtos;
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
+    public Cliente procurarId(int id) {
+        String sql = "select * from cliente where id = ?";
 
         try {
             PreparedStatement stmt = this.conexao.prepareStatement(sql);
-            stmt.setInt(1, telefone);
+            stmt.setInt(1, id);
 
             ResultSet rs = stmt.executeQuery();
 

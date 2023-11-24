@@ -6,6 +6,8 @@ public class Evento {
     String local;
     Date data;
 
+
+
     public Evento() {
     }
 

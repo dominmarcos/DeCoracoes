@@ -41,6 +41,10 @@ public class Cliente {
     public String toString() {
         return "ID: " + this.id + " Nome: " + this.nome + " Telefone: " + this.telefone + "\n";
     }
+
+    public String[] toTabela() {
+        return new String[]{this.id+"", this.nome, this.telefone};
+    }
 }
 
 

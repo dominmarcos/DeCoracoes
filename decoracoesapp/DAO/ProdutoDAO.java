@@ -1,7 +1,7 @@
 //package com.example.decoracoesapp.DAO;
 //
 //import com.example.decoracoesapp.Model.Cliente;
-//import com.example.decoracoesapp.View.Conexao;
+//import com.example.decoracoesapp.DAO.Conexao;
 //
 //import java.sql.Connection;
 //import java.sql.PreparedStatement;

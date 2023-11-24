@@ -9,9 +9,11 @@ import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 
 import com.example.decoracoesapp.DAO.GeralDAO;
 import com.example.decoracoesapp.Model.Cliente;
+import com.example.decoracoesapp.Model.Evento;
 import com.example.decoracoesapp.R;
 import com.example.decoracoesapp.View.Buscar;
 import com.example.decoracoesapp.View.Cadastrar;
@@ -19,29 +21,8 @@ import com.example.decoracoesapp.View.Cadastrar;
 
 public class MainActivity extends AppCompatActivity {
     Button btcadastrar, btbuscar;
-
-    Cliente cliente = new Cliente();
-
-    public SQLiteDatabase abrirbanco(String BD) {
-        try {
-            SQLiteDatabase bdapp = openOrCreateDatabase(BD + ".db", Context.MODE_PRIVATE, null);
-            return bdapp;
-        } catch (SQLException ex) {
-            return null;
-        }
-    }
-
-    public void insert(Cliente cliente) {
-        try {
-            SQLiteDatabase bd = abrirbanco("aula");
-            // insert into aluno values (id, 'nome', telefone)"
-            String SQL = "INSERT INTO clientes values(" + cliente.getId() + ",'" + cliente.getNome() + "' + " + ")";
-            bd.execSQL(SQL);
-            bd.close();
-        } catch (SQLException ex) {
-
-        }
-    }
+    EditText buscartxt;
+    GeralDAO dao = new GeralDAO();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,6 +30,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         btcadastrar = findViewById(R.id.btcadastrar);
         btbuscar = findViewById(R.id.btbuscar);
+        buscartxt = findViewById(R.id.buscartxt);
 
         btcadastrar.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -62,7 +44,13 @@ public class MainActivity extends AppCompatActivity {
         btbuscar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                abreBuscar();
+                String idText = buscartxt.getText().toString();
+                int id = Integer.parseInt(idText);
+                //if(buscartxt.getText().toString().equals(dao.procurar(buscartxt.getText().toString()))){
+                if(id != -1){
+                    abreBuscar(id);
+                }
+
             }
         });
 
@@ -73,9 +61,10 @@ public class MainActivity extends AppCompatActivity {
         finish();
     }
 
-    private void abreBuscar() {
+    private void abreBuscar(int id) {
         Intent intent = new Intent(this, Buscar.class);
         GeralDAO dao = new GeralDAO();
+        Evento e = dao.procurarId(id);
         startActivity(intent);
         finish();
     }
